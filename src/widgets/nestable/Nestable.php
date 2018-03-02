@@ -124,11 +124,15 @@ class Nestable extends Widget
         /** @var ActiveRecord[]|TreeInterface[] $rootNodes */
         $rootNodes = $model::find()->roots()->all();
 
-        if (!empty($rootNodes[0])) {
-            /** @var ActiveRecord|TreeInterface $items */
-            $items = $rootNodes[0]->populateTree();
-            $this->_items = $this->prepareItems($items);
+        $nodes = [];
+
+        foreach ($rootNodes as $rootNode){
+            /** @var ActiveRecord|TreeInterface $node */
+            $node = $rootNode->populateTree();
+            $nodes = array_merge($nodes, $this->prepareItems($node));
         }
+
+        $this->_items = $nodes;
     }
 
     /**
@@ -138,14 +142,33 @@ class Nestable extends Widget
     protected function getNode($node)
     {
         $items = [];
+
+        $id = $node->getPrimaryKey();
+        $items[$id] = [
+            'id' => $id,
+            'name' => $node->getAttribute($this->nameAttribute),
+            'children' => $this->getChildren($node),
+            'update-url' => Url::to([$this->advancedUpdateRoute, 'id' => $node->getPrimaryKey()]),
+        ];
+
+        return $items;
+    }
+
+    protected function getChildren($node)
+    {
+        $items = [];
+
         /** @var ActiveRecord[]|TreeInterface[] $children */
         $children = $node->children;
 
-        foreach ($children as $n => $node) {
-            $items[$n]['id'] = $node->getPrimaryKey();
-            $items[$n]['name'] = $node->getAttribute($this->nameAttribute);
-            $items[$n]['children'] = $this->getNode($node);
-            $items[$n]['update-url'] = Url::to([$this->advancedUpdateRoute, 'id' => $node->getPrimaryKey()]);
+        if($children) {
+            foreach ($children as $child) {
+                $id = $child->getPrimaryKey();
+                $items[$id]['id'] =
+                $items[$id]['name'] = $child->getAttribute($this->nameAttribute);
+                $items[$id]['children'] = $this->getChildren($child);
+                $items[$id]['update-url'] = Url::to([$this->advancedUpdateRoute, 'id' => $child->getPrimaryKey()]);
+            }
         }
 
         return $items;
