@@ -122,7 +122,7 @@ class Nestable extends Widget
         $model = $this->modelClass;
 
         /** @var ActiveRecord[]|TreeInterface[] $rootNodes */
-        $rootNodes = $model::find()->roots()->all();
+        $rootNodes = $model::find()->roots()->orderBy(['weight' => SORT_ASC])->all();
 
         $nodes = [];
 
@@ -164,7 +164,7 @@ class Nestable extends Widget
         if($children) {
             foreach ($children as $child) {
                 $id = $child->getPrimaryKey();
-                $items[$id]['id'] =
+                $items[$id]['id'] = $id;
                 $items[$id]['name'] = $child->getAttribute($this->nameAttribute);
                 $items[$id]['children'] = $this->getChildren($child);
                 $items[$id]['update-url'] = Url::to([$this->advancedUpdateRoute, 'id' => $child->getPrimaryKey()]);
@@ -335,11 +335,11 @@ class Nestable extends Widget
         echo Html::beginTag('div', ['class' => "{$this->id}-nestable-menu"]);
 
         echo Html::beginTag('div', ['class' => 'btn-group']);
-        echo Html::button(Yii::t('vendor/voskobovich/yii2-tree-manager/widgets/nestable', 'Add node'), [
+        /*echo Html::button(Yii::t('vendor/voskobovich/yii2-tree-manager/widgets/nestable', 'Add node'), [
             'data-toggle' => 'modal',
             'data-target' => "#{$this->id}-new-node-modal",
             'class' => 'btn btn-success'
-        ]);
+        ]);*/
         echo Html::button(Yii::t('vendor/voskobovich/yii2-tree-manager/widgets/nestable', 'Collapse all'), [
             'data-action' => 'collapse-all',
             'class' => 'btn btn-default'
@@ -398,6 +398,7 @@ HTML;
         echo call_user_func($this->formFieldsCallable, $form, $model);
 
         echo <<<HTML
+        <input id="category-parent-id" name="parentId" type="hidden" value="">
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">$labelCloseButton</button>
@@ -450,15 +451,21 @@ HTML;
             'data-action' => 'save',
             'class' => 'btn btn-success btn-sm',
         ]);
-        echo Html::a(Yii::t('vendor/voskobovich/yii2-tree-manager/widgets/nestable', 'Advanced editing'),
-            $item['update-url'], [
-                'data-action' => 'advanced-editing',
-                'class' => 'btn btn-default btn-sm',
-                'target' => '_blank'
-            ]);
+        echo Html::button(Yii::t('vendor/voskobovich/yii2-tree-manager/widgets/nestable', 'Add node'), [
+            'data-toggle' => 'modal',
+            'data-action' => 'add-node',
+            'data-parent-id' => $item['id'],
+            'data-target' => "#{$this->id}-new-node-modal",
+            'class' => 'btn btn-info btn-sm'
+        ]);
         echo Html::button(Yii::t('vendor/voskobovich/yii2-tree-manager/widgets/nestable', 'Delete'), [
             'data-action' => 'delete',
             'class' => 'btn btn-danger btn-sm'
+        ]);
+        echo Html::a(Yii::t('vendor/voskobovich/yii2-tree-manager/widgets/nestable', 'Advanced editing'), $item['update-url'], [
+            'data-action' => 'advanced-editing',
+            'class' => 'btn btn-default btn-sm',
+            'target' => '_blank'
         ]);
         echo Html::endTag('div');
 

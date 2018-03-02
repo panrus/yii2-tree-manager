@@ -29,7 +29,7 @@ class MoveNodeAction extends BaseAction
 
         $form = new MoveNodeForm();
 
-        $params = Yii::$app->getRequest()->getBodyParams();
+        $params = Yii::$app->getRequest()->post();
         $form->load($params, '');
 
         if (!$form->validate()) {
@@ -37,19 +37,26 @@ class MoveNodeAction extends BaseAction
         }
 
         try {
-            if ($form->prev_id > 0) {
-                $parentModel = $this->findModel($form->prev_id);
-                if ($parentModel->isRoot()) {
+            if($form->parent_id) {
+                if ($form->prev_id > 0) {
+                    $parentModel = $this->findModel($form->prev_id);
+                    if ($parentModel->isRoot()) {
+                        return $model->appendTo($parentModel)->save();
+                    } else {
+                        return $model->insertAfter($parentModel)->save();
+                    }
+                } elseif ($form->next_id > 0) {
+                    $parentModel = $this->findModel($form->next_id);
+                    return $model->insertBefore($parentModel)->save();
+                } elseif ($form->parent_id > 0) {
+                    $parentModel = $this->findModel($form->parent_id);
                     return $model->appendTo($parentModel)->save();
-                } else {
-                    return $model->insertAfter($parentModel)->save();
                 }
-            } elseif ($form->next_id > 0) {
-                $parentModel = $this->findModel($form->next_id);
-                return $model->insertBefore($parentModel)->save();
-            } elseif ($form->parent_id > 0) {
-                $parentModel = $this->findModel($form->parent_id);
-                return $model->appendTo($parentModel)->save();
+            } else {
+                $nextModel = $this->findModel($form->next_id);
+                $model = $model->makeRoot();
+                $model->weight = $nextModel->weight - 1;
+                return $model->save();
             }
         } catch (Exception $ex) {
         }

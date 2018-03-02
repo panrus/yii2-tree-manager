@@ -199,6 +199,13 @@
                     tree.deleteNodeRequest(li);
                 }
             });
+
+            el.on('click', '.' + tree.options.btnGroupClass + ' [data-action="add-node"]', function (e) {
+                var target = $(e.target),
+                    modal = $(target).data('target');
+
+                $(modal).find('#category-parent-id').val(target.data('parent-id'));
+            });
         },
 
         reset: function () {

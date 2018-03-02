@@ -22,17 +22,16 @@ class CreateNodeAction extends BaseAction
         /** @var TreeInterface|ActiveRecord $model */
         $model = Yii::createObject($this->modelClass);
 
-        $params = Yii::$app->getRequest()->getBodyParams();
+        $params = Yii::$app->getRequest()->post();
         $model->load($params);
 
         if (!$model->validate()) {
             return $model;
         }
 
-        $roots = $model::find()->roots()->all();
-
-        if (isset($roots[0])) {
-            return $model->appendTo($roots[0])->save();
+        if ($parentId = Yii::$app->getRequest()->post('parentId')) {
+            $parent = $this->findModel($parentId);
+            return $model->appendTo($parent)->save();
         } else {
             return $model->makeRoot()->save();
         }
