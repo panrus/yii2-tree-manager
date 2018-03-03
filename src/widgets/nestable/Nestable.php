@@ -122,7 +122,7 @@ class Nestable extends Widget
         $model = $this->modelClass;
 
         /** @var ActiveRecord[]|TreeInterface[] $rootNodes */
-        $rootNodes = $model::find()->roots()->orderBy(['weight' => SORT_ASC])->all();
+        $rootNodes = $model::find()->roots()->all();
 
         $nodes = [];
 
