@@ -52,10 +52,15 @@ class MoveNodeAction extends BaseAction
                     $parentModel = $this->findModel($form->parent_id);
                     return $model->appendTo($parentModel)->save();
                 }
+            } elseif($form->prev_id) {
+                $prevModel = $this->findModel($form->prev_id);
+                $model = $model->makeRoot();
+                $model->weight = $prevModel->weight - 1;
+                return $model->save();
             } else {
                 $nextModel = $this->findModel($form->next_id);
                 $model = $model->makeRoot();
-                $model->weight = $nextModel->weight - 1;
+                $model->weight = $nextModel->weight + 1;
                 return $model->save();
             }
         } catch (Exception $ex) {
