@@ -163,8 +163,8 @@ class Nestable extends Widget
             'children' => $this->getChildren($node),
             'update-url' => Url::to([$this->advancedUpdateRoute, 'id' => $node->getPrimaryKey()]),
         ];
-        if(isset($this->prepareNode) && is_callable([$this, $this->prepareNode])) {
-            $item = call_user_func_array($this->prepareNode, ['item' => $item]);
+        if(isset($this->prepareNode) && is_callable([$this, 'prepareNode'])) {
+            $item = call_user_func_array($this->prepareNode, ['item' => $item, 'node' => $node]);
         }
         $items[$id] = $item;
 
