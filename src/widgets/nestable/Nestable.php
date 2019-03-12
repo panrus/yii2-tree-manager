@@ -178,7 +178,7 @@ class Nestable extends Widget
      * @param ActiveRecord|TreeInterface[] $node
      * @return array
      */
-    private function prepareItems($node)
+    protected function prepareItems($node)
     {
         return $this->getNode($node);
     }
@@ -187,7 +187,7 @@ class Nestable extends Widget
      * @param null $name
      * @return array
      */
-    private function getPluginOptions($name = null)
+    protected function getPluginOptions($name = null)
     {
         $options = ArrayHelper::merge($this->getDefaultPluginOptions(), $this->pluginOptions);
 
@@ -220,7 +220,7 @@ class Nestable extends Widget
     /**
      * Register Asset manager
      */
-    private function registerPluginAssets()
+    protected function registerPluginAssets()
     {
         NestableAsset::register($this->getView());
 
@@ -253,7 +253,7 @@ class Nestable extends Widget
     /**
      * Register Asset manager
      */
-    private function registerActionButtonsAssets()
+    protected function registerActionButtonsAssets()
     {
         $view = $this->getView();
         $view->registerJs("
@@ -285,7 +285,7 @@ class Nestable extends Widget
      * Generate default plugin options
      * @return array
      */
-    private function getDefaultPluginOptions()
+    protected function getDefaultPluginOptions()
     {
         $options = [
             'namePlaceholder' => $this->getPlaceholderForName(),
@@ -357,7 +357,7 @@ class Nestable extends Widget
     /**
      * Вывод меню
      */
-    private function renderMenu()
+    protected function renderMenu()
     {
         echo Html::beginTag('div', ['class' => 'dd-nestable', 'id' => $this->id]);
 
@@ -369,7 +369,7 @@ class Nestable extends Widget
     /**
      * Render form for new node
      */
-    private function renderForm()
+    protected function renderForm()
     {
         /** @var ActiveRecord $model */
         $model = new $this->modelClass;
@@ -417,7 +417,7 @@ HTML;
      * Распечатка одного уровня
      * @param $level
      */
-    private function printLevel($level)
+    protected function printLevel($level)
     {
         echo Html::beginTag('ol', ['class' => 'dd-list']);
 
@@ -432,7 +432,7 @@ HTML;
      * Распечатка одного пункта
      * @param $item
      */
-    private function printItem($item)
+    protected function printItem($item)
     {
         $htmlOptions = ['class' => 'dd-item'];
         $htmlOptions['data-id'] = !empty($item['id']) ? $item['id'] : '';
