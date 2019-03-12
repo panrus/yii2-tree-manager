@@ -83,6 +83,19 @@ class Nestable extends Widget
     public $formFieldsCallable;
 
     /**
+     * @var string the name of the default view when [[\yii\web\ViewAction::$viewParam]] GET parameter is not provided
+     * by user. Defaults to 'index'. This should be in the format of 'path/to/view', similar to that given in the
+     * GET parameter.
+     * @see \yii\web\ViewAction::$viewPrefix
+     */
+    public $defaultView = '@vendor/voskobovich/yii2-tree-manager/src/widgets/nestable/views/index';
+
+    /**
+     * @var \Closure
+     */
+    public $prepareNode;
+
+    /**
      * Структура меню в php array формате
      * @var array
      */
@@ -144,12 +157,16 @@ class Nestable extends Widget
         $items = [];
 
         $id = $node->getPrimaryKey();
-        $items[$id] = [
+        $item = [
             'id' => $id,
             'name' => $node->getAttribute($this->nameAttribute),
             'children' => $this->getChildren($node),
             'update-url' => Url::to([$this->advancedUpdateRoute, 'id' => $node->getPrimaryKey()]),
         ];
+        if(isset($this->prepareNode) && is_callable([$this, $this->prepareNode])) {
+            $item = call_user_func_array($this->prepareNode, ['item' => $item]);
+        }
+        $items[$id] = $item;
 
         return $items;
     }
@@ -210,7 +227,7 @@ class Nestable extends Widget
             'id' => $this->id . '-pjax'
         ]);
         $this->registerPluginAssets();
-        $this->renderMenu();
+        echo $this->render($this->defaultView, ['items' => $this->_items] );
         $this->renderForm();
         Pjax::end();
 
@@ -355,18 +372,6 @@ class Nestable extends Widget
     }
 
     /**
-     * Вывод меню
-     */
-    protected function renderMenu()
-    {
-        echo Html::beginTag('div', ['class' => 'dd-nestable', 'id' => $this->id]);
-
-        $this->printLevel($this->_items);
-
-        echo Html::endTag('div');
-    }
-
-    /**
      * Render form for new node
      */
     protected function renderForm()
@@ -413,68 +418,4 @@ HTML;
 HTML;
     }
 
-    /**
-     * Распечатка одного уровня
-     * @param $level
-     */
-    protected function printLevel($level)
-    {
-        echo Html::beginTag('ol', ['class' => 'dd-list']);
-
-        foreach ($level as $item) {
-            $this->printItem($item);
-        }
-
-        echo Html::endTag('ol');
-    }
-
-    /**
-     * Распечатка одного пункта
-     * @param $item
-     */
-    protected function printItem($item)
-    {
-        $htmlOptions = ['class' => 'dd-item'];
-        $htmlOptions['data-id'] = !empty($item['id']) ? $item['id'] : '';
-
-        echo Html::beginTag('li', $htmlOptions);
-
-        echo Html::tag('div', '', ['class' => 'dd-handle']);
-        echo Html::tag('div', $item['name'], ['class' => 'dd-content']);
-
-        echo Html::beginTag('div', ['class' => 'dd-edit-panel']);
-        echo Html::input('text', null, $item['name'],
-            ['class' => 'dd-input-name', 'placeholder' => $this->getPlaceholderForName()]);
-
-        echo Html::beginTag('div', ['class' => 'btn-group']);
-        echo Html::button(Yii::t('vendor/voskobovich/yii2-tree-manager/widgets/nestable', 'Save'), [
-            'data-action' => 'save',
-            'class' => 'btn btn-success btn-sm',
-        ]);
-        echo Html::button(Yii::t('vendor/voskobovich/yii2-tree-manager/widgets/nestable', 'Add node'), [
-            'data-toggle' => 'modal',
-            'data-action' => 'add-node',
-            'data-parent-id' => $item['id'],
-            'data-target' => "#{$this->id}-new-node-modal",
-            'class' => 'btn btn-info btn-sm'
-        ]);
-        echo Html::button(Yii::t('vendor/voskobovich/yii2-tree-manager/widgets/nestable', 'Delete'), [
-            'data-action' => 'delete',
-            'class' => 'btn btn-danger btn-sm'
-        ]);
-        echo Html::a(Yii::t('vendor/voskobovich/yii2-tree-manager/widgets/nestable', 'Advanced editing'), $item['update-url'], [
-            'data-action' => 'advanced-editing',
-            'class' => 'btn btn-default btn-sm',
-            'target' => '_blank'
-        ]);
-        echo Html::endTag('div');
-
-        echo Html::endTag('div');
-
-        if (isset($item['children']) && count($item['children'])) {
-            $this->printLevel($item['children']);
-        }
-
-        echo Html::endTag('li');
-    }
 }
