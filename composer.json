@@ -1,5 +1,5 @@
 {
-  "name": "voskobovich/yii2-tree-manager",
+  "name": "panrus/yii2-tree-manager",
   "description": "Tree Manager using jquery.nestable plugin for Yii 2",
   "keywords": [
     "widget",
